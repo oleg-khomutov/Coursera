@@ -1,65 +1,68 @@
-import oauth2 as oauth
+import sys
 import urllib2 as urllib
-
-# See Assignment 1 instructions or README for how to get these credentials
-access_token_key = "<Enter your access token key here>"
-access_token_secret = "<Enter your access token secret here>"
-
-consumer_key = "<Enter consumer key>"
-consumer_secret = "<Enter consumer secret>"
-
-_debug = 0
-
-oauth_token = oauth.Token(key=access_token_key, secret=access_token_secret)
-oauth_consumer = oauth.Consumer(key=consumer_key, secret=consumer_secret)
-
-signature_method_hmac_sha1 = oauth.SignatureMethod_HMAC_SHA1()
-
-http_method = "GET"
-
-http_handler = urllib.HTTPHandler(debuglevel=_debug)
-https_handler = urllib.HTTPSHandler(debuglevel=_debug)
-
-'''
-Construct, sign, and open a twitter request
-using the hard-coded credentials above.
-'''
+import oauth2 as oauth
 
 
-def twitterreq(url, method, parameters):
+class Configuration:
+
+    _debug = 0
+
+    HTTP_URL = "https://stream.twitter.com/1/statuses/sample.json"
+    HTTP_Method = "GET"
+    HTTP_Handler = urllib.HTTPHandler(debuglevel=_debug)
+    HTTPS_Handler = urllib.HTTPSHandler(debuglevel=_debug)
+
+    SignatureMethod_HMAC_SHA1 = oauth.SignatureMethod_HMAC_SHA1()
+
+
+def GetTwitterStream():
+    oauth_token = oauth.Token(key=Configuration.AccessTokenKey,
+                              secret=Configuration.AccessTokenSecret)
+
+    oauth_consumer = oauth.Consumer(key=Configuration.ConsumerKey,
+                                    secret=Configuration.ConsumerSecret)
+
     req = oauth.Request.from_consumer_and_token(oauth_consumer,
                                                 token=oauth_token,
-                                                http_method=http_method,
-                                                http_url=url,
-                                                parameters=parameters)
+                                                http_method=Configuration.HTTP_Method,
+                                                http_url=Configuration.HTTP_URL,
+                                                parameters=[])
 
-    req.sign_request(signature_method_hmac_sha1, oauth_consumer, oauth_token)
+    req.sign_request(Configuration.SignatureMethod_HMAC_SHA1,
+                     oauth_consumer,
+                     oauth_token)
 
-    headers = req.to_header()
-
-    if http_method == "POST":
+    if Configuration.HTTP_Method == "POST":
         encoded_post_data = req.to_postdata()
     else:
         encoded_post_data = None
-        url = req.to_url()
+        Configuration.HTTP_URL = req.to_url()
 
     opener = urllib.OpenerDirector()
-    opener.add_handler(http_handler)
-    opener.add_handler(https_handler)
+    opener.add_handler(Configuration.HTTP_Handler)
+    opener.add_handler(Configuration.HTTPS_Handler)
 
-    response = opener.open(url, encoded_post_data)
-
-    return response
+    return opener.open(Configuration.HTTP_URL, encoded_post_data)
 
 
-def fetchsamples():
-    url = "https://stream.twitter.com/1/statuses/sample.json"
-    parameters = []
-    response = twitterreq(url, "GET", parameters)
-    for line in response:
-        print
-        line.strip()
+def GetDestination(path):
+    return open(path, "w")
+
+
+def FetchSamples():
+    i = 0
+
+    with GetDestination(sys.argv[1]) as destination:
+        for line in GetTwitterStream():
+            destination.write(line.strip() + "\n")
+            i += 1
+
+            if i % 10000 == 0:
+                print(str(i) + " elements")
+
+            if i == 250000:
+                return
 
 
 if __name__ == '__main__':
-    fetchsamples()
+    FetchSamples();
