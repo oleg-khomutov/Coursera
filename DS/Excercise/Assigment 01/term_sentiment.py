@@ -17,7 +17,7 @@ def GetSentimentsScores(sentimentSource):
 
 
 def NormalizeTerm(term):
-    term = unicode.lower(term.strip())
+    term = term.strip()
 
     if term.isalpha():
         return term
@@ -45,8 +45,11 @@ def NormalizeTerm(term):
 def CleanupTwit(twitText):
     termsOfTweet = []
 
-    for term in twitText.split(" "):
-        termsOfTweet.append(NormalizeTerm(term))
+    for term in twitText.strip().split(" "):
+        normalizedTerm = NormalizeTerm(term)
+
+        if len(normalizedTerm) > 0:
+            termsOfTweet.append(normalizedTerm)
 
     return termsOfTweet
 
@@ -90,7 +93,7 @@ def PrintTermSentimentScore(twitterSource, scores):
                     terms[term] = termScores
 
     for term in terms:
-        print(u"{0} {1:.3f}".format(term, terms[term][0]/terms[term][1]))
+        print("{0} {1:.3f}".format(term, terms[term][0]/terms[term][1]))
 
 
 def main():
