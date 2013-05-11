@@ -61,11 +61,11 @@ def CalculateSentimentScore(termsOfTwit, scores):
     return scoreOfTwit
 
 
-def PrintTwitSentimentScore(twitterSource, scores):
-    for twit in twitterSource:
+def PrintTermSentimentScore(twitterSource, scores):
+    terms = {}
 
+    for twit in twitterSource:
         jsonTwit = json.loads(twit)
-        scoreOfTwit = 0.00
 
         if "text" in jsonTwit:
             twitText = jsonTwit["text"]
@@ -73,7 +73,24 @@ def PrintTwitSentimentScore(twitterSource, scores):
             termsOfTwit = CleanupTwit(twitText)
             scoreOfTwit = CalculateSentimentScore(termsOfTwit, scores)
 
-        print("%0.2f" % scoreOfTwit)
+            for term in termsOfTwit:
+                if term in terms:
+                    termScores = terms[term]
+
+                    termScores[0] += scoreOfTwit
+                    termScores[1] += 1.00
+
+                    terms[term] = termScores
+                else:
+                    termScores = [0, 0]
+
+                    termScores[0] = scoreOfTwit
+                    termScores[1] = 1.00
+
+                    terms[term] = termScores
+
+    for term in terms:
+        print(u"{0} {1:.3f}".format(term, terms[term][0]/terms[term][1]))
 
 
 def main():
@@ -84,7 +101,7 @@ def main():
         scores = GetSentimentsScores(sentimentSource)
 
     with GetSource(twitterSourcePath) as twitterSource:
-        PrintTwitSentimentScore(twitterSource, scores)
+        PrintTermSentimentScore(twitterSource, scores)
 
 
 if __name__ == '__main__':
