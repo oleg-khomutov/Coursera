@@ -10,7 +10,7 @@ def GetSource(path):
 
 
 def NormalizeTerm(term):
-    term = term.lower()
+    # term = term.lower()
     term = term[term.index("#") + 1:]
 
     if term.isalnum():
