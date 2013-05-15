@@ -22,14 +22,7 @@ def GetTwitHashTags(twitText):
     return ""
 
 
-f = open("1.txt", "w")
-f.write("11111" + "\n")
-f.close()
+test = "test\n"
 
-f = open("1.txt", "r")
-s = []
-for s1 in f:
-    s.append(s1.lower())
-print(len(s))
-print(s[0])
-print(s[1])
+print(test.strip())
+print("111")
