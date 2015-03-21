@@ -1,4 +1,4 @@
-Coursera
+Coursera +
 
 New course 2015
 ========
